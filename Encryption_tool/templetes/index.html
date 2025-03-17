@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Encryption Tool</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #d3d3d3;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #e0e0e0;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .title {
+            text-align: center;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .section {
+            flex: 1;
+            margin: 0 10px;
+        }
+        .label-container {
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+        }
+        .label {
+        
+            font-weight: bold;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            margin-right: 10px;
+            min-width: 120px; Fixed width to align labels consistently
+            text-align: right; /* Align text to the right within the label */
+            box-sizing: border-box;
+        }
+        .key-label {
+            color: #ff5733; /* Orange-red for Encryption Key and Decryption Key */
+        }
+        .algorithm-label {
+            color: black; /* Black for Choose Algorithm */
+        }
+        .field {
+            flex: 1;
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            resize: none;
+            box-sizing: border-box;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            box-sizing: border-box;
+        }
+        .button-row {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            cursor: pointer;
+            border: none;
+            border-radius: 3px;
+            color: white;
+            width: 48%;
+            box-sizing: border-box;
+        }
+        #encrypt-btn {
+            background-color: #1b251b;
+        }
+        #encrypt-btn:hover {
+            background-color: #45a049;
+        }
+        #copy-encrypt-btn {
+            background-color: #ff5733;
+        }
+        #copy-encrypt-btn:hover {
+            background-color: #e64a19;
+        }
+        #decrypt-btn {
+            background-color: #4CAF50;
+        }
+        #decrypt-btn:hover {
+            background-color: #45a049;
+        }
+        #copy-decrypt-btn {
+            background-color: #ff5733;
+        }
+        #copy-decrypt-btn:hover {
+            background-color: #e64a19;
+        }
+        select {
+            width: 100%;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="title">Sample GUI</div>
+        <div class="row">
+            <div class="section">
+                <div class="label">Message to Encrypt</div>
+                <textarea id="encrypt-text">hello git people</textarea>
+                <div class="label-container">
+                    <div class="label key-label">Encryption Key</div>
+                    <div class="field">
+                        <input type="text" id="encrypt-key" value="mhabib">
+                    </div>
+                </div>
+                <div class="button-row">
+                    <button id="encrypt-btn" onclick="encrypt()">Encrypt</button>
+                    <button id="copy-encrypt-btn" onclick="copyEncrypt()">Copy Encryption</button>
+                </div>
+                <textarea id="encrypt-result" readonly>IV3/wa31SXD6mhtxUK9Mvo2HcGW79/3Sp0JK=</textarea>
+            </div>
+            <div class="section">
+                <div class="label">Message to Decrypt</div>
+                <textarea id="decrypt-text">IZBV3/wa31SxdbmhtxUK9Mvo2HcGw79/3Sp0JK=</textarea>
+                <div class="label-container">
+                    <div class="label key-label">Decryption Key</div>
+                    <div class="field">
+                        <input type="text" id="decrypt-key" value="mhabib">
+                    </div>
+                </div>
+                <div class="button-row">
+                    <button id="decrypt-btn" onclick="decrypt()">Decrypt</button>
+                    <button id="copy-decrypt-btn" onclick="copyDecrypt()">Copy Decryption</button>
+                </div>
+                <textarea id="decrypt-result" readonly>hello git people</textarea>
+            </div>
+        </div>
+        <div class="label-container">
+            <div class="label algorithm-label">Choose Algorithm</div>
+            <div class="field">
+                <select id="algorithm">
+                    <option value="OTP">One-Time Pad (OTP)</option>
+                    <option value="3DES">3DES</option>
+                    <option value="AES">AES</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function encrypt() {
+            const message = document.getElementById('encrypt-text').value;
+            const key = document.getElementById('encrypt-key').value;
+            const algorithm = document.getElementById('algorithm').value;
+
+            const response = await fetch('/encrypt', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ algorithm, message, key })
+            });
+            const data = await response.json();
+
+            if (data.error) {
+                alert(data.error);
+            } else {
+                document.getElementById('decrypt-text').value = data.result;
+                document.getElementById('encrypt-result').value = data.result;
+                document.getElementById('decrypt-result').value = ''; // Clear decrypt result
+            }
+        }
+
+        async function decrypt() {
+            const ciphertext = document.getElementById('decrypt-text').value;
+            const key = document.getElementById('decrypt-key').value;
+            const algorithm = document.getElementById('algorithm').value;
+
+            const response = await fetch('/decrypt', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ algorithm, ciphertext, key })
+            });
+            const data = await response.json();
+
+            if (data.error) {
+                alert(data.error);
+            } else {
+                document.getElementById('decrypt-text').value = data.result;
+                document.getElementById('decrypt-result').value = data.result;
+                document.getElementById('encrypt-result').value = ''; // Clear encrypt result
+            }
+        }
+
+        function copyEncrypt() {
+            const text = document.getElementById('encrypt-result').value || document.getElementById('decrypt-text').value;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Encryption copied to clipboard!');
+            }).catch(err => {
+                alert('Failed to copy: ' + err);
+            });
+        }
+
+        function copyDecrypt() {
+            const text = document.getElementById('decrypt-result').value || document.getElementById('decrypt-text').value;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Decryption copied to clipboard!');
+            }).catch(err => {
+                alert('Failed to copy: ' + err);
+            });
+        }
+    </script>
+</body>
+</html>
